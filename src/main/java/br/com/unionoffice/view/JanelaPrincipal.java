@@ -52,11 +52,10 @@ public class JanelaPrincipal extends JFrame {
 
 		// frame
 		setJMenuBar(barraMenu);
-		
+
 		// pnMovimentos
 		pnMovimentos = new PainelMovimentos();
 		setContentPane(pnMovimentos);
-		
 
 		// visivel
 		setVisible(true);
@@ -66,6 +65,7 @@ public class JanelaPrincipal extends JFrame {
 	private void definirEventos() {
 		mitNovoMovimento.addActionListener(e -> {
 			new NovoMovimento();
+			pnMovimentos.refreshAdd();
 		});
 	}
 

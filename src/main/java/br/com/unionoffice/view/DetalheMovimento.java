@@ -28,7 +28,7 @@ import br.com.unionoffice.modelo.CondPagamento;
 import br.com.unionoffice.modelo.Movimento;
 import br.com.unionoffice.modelo.TipoMovimento;
 
-public class NovoMovimento extends JDialog {
+public class DetalheMovimento extends JDialog {
 	JLabel lbData, lbEmitente, lbVencimento, lbValorTotal, lbCondPagamento, lbReferencia, lbObservacoes,
 			lbTipoMovimento, lbNumero;
 	JFormattedTextField tfData, tfVencimento;
@@ -42,9 +42,11 @@ public class NovoMovimento extends JDialog {
 	SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
 	MovimentoDao dao;
 	CondPagamento condicao;
+	Movimento movimento;
 
-	public NovoMovimento() {
+	public DetalheMovimento(Movimento movimento) {
 		try {
+			this.movimento = movimento;
 			dao = new MovimentoDao();
 			inicializarComponentes();
 			definirEventos();
@@ -134,8 +136,10 @@ public class NovoMovimento extends JDialog {
 		lbTipoMovimento = new JLabel("Tipo de Movimento:");
 
 		// cbTipoMovimento
-		cbTipoMovimento = new JComboBox<>(TipoMovimento.values());
+		cbTipoMovimento = new JComboBox<>(TipoMovimento.values());		
 		((JLabel) cbTipoMovimento.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+		cbTipoMovimento.setSelectedItem(movimento.getTipoMovimento());
+		cbTipoMovimento.setEnabled(false);
 
 		// lbData
 		lbData = new JLabel("Data Emissão:");
