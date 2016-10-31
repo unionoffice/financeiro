@@ -1,10 +1,13 @@
 package br.com.unionoffice.view;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,22 +29,21 @@ import br.com.unionoffice.dao.MovimentoDao;
 import br.com.unionoffice.document.ValorDocument;
 import br.com.unionoffice.modelo.CondPagamento;
 import br.com.unionoffice.modelo.Movimento;
+import br.com.unionoffice.modelo.Situacao;
 import br.com.unionoffice.modelo.TipoMovimento;
 
 public class DetalheMovimento extends JDialog {
-	JLabel lbData, lbEmitente, lbVencimento, lbValorTotal, lbCondPagamento, lbReferencia, lbObservacoes,
-			lbTipoMovimento, lbNumero;
+	JLabel lbData, lbEmitente, lbVencimento, lbValorTotal, lbReferencia, lbObservacoes, lbTipoMovimento, lbNumero,
+			lbSituacao, lbComprovante;
 	JFormattedTextField tfData, tfVencimento;
-	JTextField tfEmitente, tfValorTotal, tfReferencia, tfObservacoes, tfNumero;
+	JTextField tfEmitente, tfValorTotal, tfReferencia, tfObservacoes, tfNumero, tfComprovante;
 	MaskFormatter maskData;
-	JComboBox<CondPagamento> cbCondPagamento;
 	JComboBox<TipoMovimento> cbTipoMovimento;
-	JButton btCriar;
+	JComboBox<Situacao> cbSituacao;
+	JButton btSalvar, btLiquidar;
 	JPanel pnSuperior;
-	Calendar dataEmissao = Calendar.getInstance(), dataVencimento = Calendar.getInstance();
 	SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
 	MovimentoDao dao;
-	CondPagamento condicao;
 	Movimento movimento;
 
 	public DetalheMovimento(Movimento movimento) {
@@ -52,29 +54,16 @@ public class DetalheMovimento extends JDialog {
 			definirEventos();
 			setModal(true);
 			setVisible(true);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-				
+
 	}
 
 	private void definirEventos() {
-		// cbCondPagamento
-		cbCondPagamento.addActionListener(e -> {
-			try {
-				dataEmissao.setTime(formatador.parse(tfData.getValue().toString()));
-				dataVencimento.setTime(dataEmissao.getTime());
-				condicao = (CondPagamento) cbCondPagamento.getSelectedItem();
-				dataVencimento.add(Calendar.DAY_OF_YEAR, condicao.dias);
-				tfVencimento.setValue(formatador.format(dataVencimento.getTime()));
-			} catch (Exception erro) {
-				System.out.println(erro.getMessage());
-			}
-		});
-
-		// btCriar
-		btCriar.addActionListener(e -> {
+		// btSalvar
+		btSalvar.addActionListener(e -> {
 			if (tfData.getValue() == null) {
 				JOptionPane.showMessageDialog(null, "Informe a data de emissão", "Informe",
 						JOptionPane.INFORMATION_MESSAGE);
@@ -94,25 +83,52 @@ public class DetalheMovimento extends JDialog {
 				JOptionPane.showMessageDialog(null, "Informe a referência", "Informe", JOptionPane.INFORMATION_MESSAGE);
 				tfReferencia.requestFocus();
 			} else {
-				condicao = (CondPagamento) cbCondPagamento.getSelectedItem();
-				double total = Double.parseDouble(tfValorTotal.getText());
-			
-				for (int i = 0; i < condicao.qtdParcelas; i++) {
-					Movimento movimento = new Movimento();
-					movimento.setValorParcela(new BigDecimal(total / condicao.qtdParcelas));
+				try {
 					movimento.setReferencia(tfReferencia.getText());
 					movimento.setEmitente(tfEmitente.getText());
 					movimento.setTipoMovimento((TipoMovimento) cbTipoMovimento.getSelectedItem());
-					movimento.setCondPagamento((CondPagamento)cbCondPagamento.getSelectedItem());
-					movimento.setNumParcela((byte) (i + 1));
-					movimento.setObservacao(tfObservacoes.getText());					
-					movimento.setVencimento((Calendar)dataVencimento.clone());
-					movimento.setData(dataEmissao);
+					movimento.setObservacao(tfObservacoes.getText());
+					Calendar dataVenc = Calendar.getInstance();
+					dataVenc.setTime(formatador.parse(tfVencimento.getValue().toString()));
+					movimento.setVencimento(dataVenc);
+					Calendar data = Calendar.getInstance();
+					data.setTime(formatador.parse(tfData.getValue().toString()));
+					movimento.setData(data);
 					movimento.setNumero(tfNumero.getText());
-					dao.inserir(movimento);
-					dataVencimento.add(Calendar.DAY_OF_YEAR, condicao.dias);
+					movimento.setSituacao((Situacao) cbSituacao.getSelectedItem());
+					if (movimento.getSituacao() == Situacao.LIQUIDADO)
+						movimento.setComprovante(tfComprovante.getText());
+					dao.atualizar(movimento);
+					dispose();
+				} catch (Exception e2) {
+					JOptionPane.showMessageDialog(null, "Erro", e2.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}
-				limpar();				
+
+			}
+		});
+
+		// btLiquidar
+		btLiquidar.addActionListener(e -> {
+			try {
+				movimento.setReferencia(tfReferencia.getText());
+				movimento.setEmitente(tfEmitente.getText());
+				movimento.setTipoMovimento((TipoMovimento) cbTipoMovimento.getSelectedItem());
+				movimento.setObservacao(tfObservacoes.getText());
+				Calendar dataVenc = Calendar.getInstance();
+				dataVenc.setTime(formatador.parse(tfVencimento.getValue().toString()));
+				movimento.setVencimento(dataVenc);
+				Calendar data = Calendar.getInstance();
+				data.setTime(formatador.parse(tfData.getValue().toString()));
+				movimento.setData(data);
+				movimento.setNumero(tfNumero.getText());
+				movimento.setSituacao(Situacao.LIQUIDADO);
+				movimento.setDataLiquidacao(Calendar.getInstance());
+				movimento.setComprovante(JOptionPane.showInputDialog(null, "Informe o comprovante, caso exista",
+						"Comprovante", JOptionPane.QUESTION_MESSAGE));
+				dao.atualizar(movimento);
+				dispose();
+			} catch (Exception e2) {
+				JOptionPane.showMessageDialog(null, "Erro", e2.getMessage(), JOptionPane.ERROR_MESSAGE);
 			}
 		});
 	}
@@ -136,10 +152,11 @@ public class DetalheMovimento extends JDialog {
 		lbTipoMovimento = new JLabel("Tipo de Movimento:");
 
 		// cbTipoMovimento
-		cbTipoMovimento = new JComboBox<>(TipoMovimento.values());		
+		cbTipoMovimento = new JComboBox<>(TipoMovimento.values());
 		((JLabel) cbTipoMovimento.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
 		cbTipoMovimento.setSelectedItem(movimento.getTipoMovimento());
 		cbTipoMovimento.setEnabled(false);
+		cbTipoMovimento.addMouseListener(adapterEnable);
 
 		// lbData
 		lbData = new JLabel("Data Emissão:");
@@ -150,7 +167,9 @@ public class DetalheMovimento extends JDialog {
 		// tfData
 		tfData = new JFormattedTextField(maskData);
 		tfData.setHorizontalAlignment(SwingConstants.CENTER);
-		tfData.setValue(new SimpleDateFormat("dd/MM/yyyy").format(dataEmissao.getTime()));
+		tfData.setValue(new SimpleDateFormat("dd/MM/yyyy").format(movimento.getData().getTime()));
+		tfData.addMouseListener(adapterEnable);
+		tfData.setEnabled(false);
 
 		// lbEmitente
 		lbEmitente = new JLabel("Emitente:");
@@ -158,6 +177,9 @@ public class DetalheMovimento extends JDialog {
 		// tfEmitente
 		tfEmitente = new JTextField();
 		tfEmitente.setHorizontalAlignment(SwingConstants.CENTER);
+		tfEmitente.setText(movimento.getEmitente());
+		tfEmitente.setEnabled(false);
+		tfEmitente.addMouseListener(adapterEnable);
 
 		// lbVencimento
 		lbVencimento = new JLabel("Vencimento:");
@@ -165,6 +187,9 @@ public class DetalheMovimento extends JDialog {
 		// tfVencimento
 		tfVencimento = new JFormattedTextField(maskData);
 		tfVencimento.setHorizontalAlignment(SwingConstants.CENTER);
+		tfVencimento.setValue(new SimpleDateFormat("dd/MM/yyyy").format(movimento.getVencimento().getTime()));
+		tfVencimento.setEnabled(false);
+		tfVencimento.addMouseListener(adapterEnable);
 
 		// lbValorTotal
 		lbValorTotal = new JLabel("Valor Total:");
@@ -173,13 +198,9 @@ public class DetalheMovimento extends JDialog {
 		tfValorTotal = new JTextField();
 		tfValorTotal.setHorizontalAlignment(SwingConstants.CENTER);
 		tfValorTotal.setDocument(new ValorDocument());
-
-		// lbQtdParcela
-		lbCondPagamento = new JLabel("Cond. Pagamento:");
-
-		// cbTipoMovimento
-		cbCondPagamento = new JComboBox<>(CondPagamento.values());
-		((JLabel) cbCondPagamento.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+		tfValorTotal.setText(movimento.getValorParcela().toEngineeringString());
+		tfValorTotal.setEnabled(false);
+		tfValorTotal.addMouseListener(adapterEnable);
 
 		// lbReferencia
 		lbReferencia = new JLabel("Referência:");
@@ -187,23 +208,51 @@ public class DetalheMovimento extends JDialog {
 		// tfReferencia
 		tfReferencia = new JTextField();
 		tfReferencia.setHorizontalAlignment(SwingConstants.CENTER);
-		
+		tfReferencia.setText(movimento.getReferencia());
+		tfReferencia.setEnabled(false);
+		tfReferencia.addMouseListener(adapterEnable);
+
 		// lbNumero
 		lbNumero = new JLabel("Número:");
-		
+
 		// tfNumero
 		tfNumero = new JTextField();
 		tfNumero.setHorizontalAlignment(SwingConstants.CENTER);
+		tfNumero.setText(movimento.getNumero());
+		tfNumero.setEnabled(false);
+		tfNumero.addMouseListener(adapterEnable);
 
 		// lbObservacoes
 		lbObservacoes = new JLabel("Observações:");
 
 		// tfObservacoes
 		tfObservacoes = new JTextField();
+		tfObservacoes.setText(movimento.getObservacao());
+		tfObservacoes.setEnabled(false);
+		tfObservacoes.addMouseListener(adapterEnable);
 
-		// btCriar
-		btCriar = new JButton("Gerar Movimento");
-		btCriar.setPreferredSize(new Dimension(0, 45));
+		// lbSituacao
+		lbSituacao = new JLabel("Situação");
+
+		// cbSituacao
+		cbSituacao = new JComboBox<>(Situacao.values());
+		((JLabel) cbSituacao.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+		cbSituacao.setSelectedItem(movimento.getSituacao());
+
+		// lbComprovante
+		lbComprovante = new JLabel("Comprovante:");
+
+		// tfComprovante
+		tfComprovante = new JTextField();
+		tfComprovante.setText(movimento.getComprovante());
+		tfComprovante.setHorizontalAlignment(SwingConstants.CENTER);
+
+		// btSalvar
+		btSalvar = new JButton("Salvar");
+
+		// btLiquidar
+		btLiquidar = new JButton("Liquidar");
+		btLiquidar.setEnabled(movimento.getSituacao() != Situacao.LIQUIDADO);
 
 		// add pnSuperior
 		pnSuperior.add(lbTipoMovimento);
@@ -212,8 +261,6 @@ public class DetalheMovimento extends JDialog {
 		pnSuperior.add(tfData);
 		pnSuperior.add(lbEmitente);
 		pnSuperior.add(tfEmitente);
-		pnSuperior.add(lbCondPagamento);
-		pnSuperior.add(cbCondPagamento);
 		pnSuperior.add(lbVencimento);
 		pnSuperior.add(tfVencimento);
 		pnSuperior.add(lbValorTotal);
@@ -224,10 +271,22 @@ public class DetalheMovimento extends JDialog {
 		pnSuperior.add(tfNumero);
 		pnSuperior.add(lbObservacoes);
 		pnSuperior.add(tfObservacoes);
+		pnSuperior.add(lbSituacao);
+		pnSuperior.add(cbSituacao);
+		if (movimento.getComprovante() != null && !movimento.getComprovante().isEmpty()) {
+			pnSuperior.add(lbComprovante);
+			pnSuperior.add(tfComprovante);
+		}
+
+		// pnBotoes
+		JPanel pnBotoes = new JPanel(new GridLayout(1, 0, 30, 30));
+		pnBotoes.setPreferredSize(new Dimension(0, 45));
+		pnBotoes.add(btSalvar);
+		pnBotoes.add(btLiquidar);
 
 		// add frame
 		add(pnSuperior, BorderLayout.CENTER);
-		add(btCriar, BorderLayout.SOUTH);
+		add(pnBotoes, BorderLayout.SOUTH);
 
 		// frame
 		JPanel painel = (JPanel) getContentPane();
@@ -244,12 +303,11 @@ public class DetalheMovimento extends JDialog {
 
 	}
 
-	
-	private void limpar(){
-		tfEmitente.setText(null);
-		tfValorTotal.setText(null);
-		tfReferencia.setText(null);
-		tfObservacoes.setText(null);
-		tfEmitente.requestFocus();
-	}
+	private MouseAdapter adapterEnable = new MouseAdapter() {
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			Component componente = (Component) e.getSource();
+			componente.setEnabled(true);
+		}
+	};
 }

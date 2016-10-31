@@ -2,20 +2,27 @@ package br.com.unionoffice.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.swing.JMenuItem;
+import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
@@ -36,6 +43,12 @@ public class PainelMovimentos extends JPanel {
 	private DefaultTableCellRenderer renderRight;
 	private Movimento movimento;
 	private int rowSelect;
+	private JPanel pnBusca;
+	private JTextField tfBuscar;
+	private JLabel lbBuscar;
+	private JButton btBuscar, btBuscarData;
+	private JFormattedTextField tfData;
+	SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
 
 	public PainelMovimentos() {
 		dao = new MovimentoDao();
@@ -66,7 +79,41 @@ public class PainelMovimentos extends JPanel {
 		// spMovimentos
 		spMovimentos = new JScrollPane(tbMovimentos);
 
+		// lbBuscar
+		lbBuscar = new JLabel("Texto:");
+		lbBuscar.setBounds(10, 15, 50, 30);
+
+		// tfBuscar
+		tfBuscar = new JTextField();
+		tfBuscar.setBounds(60, 15, 200, 30);
+
+		// btBuscar
+		btBuscar = new JButton("OK");
+		btBuscar.setBounds(270, 15, 50, 30);
+		
+		// tfData
+		tfData = new JFormattedTextField("##/##/####");
+		tfData.setValue(formatador.format(new Date()));
+		tfData.setBounds(330,15,80,30);
+		tfData.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		// btBuscarData
+		btBuscarData = new JButton("OK");
+		btBuscarData.setBounds(420,15,50,30);
+
+		// pnBusca
+		pnBusca = new JPanel();
+		pnBusca.setLayout(null);
+		pnBusca.setPreferredSize(new Dimension(0, 55));
+		pnBusca.setBorder(new TitledBorder("Buscar"));
+		pnBusca.add(lbBuscar);
+		pnBusca.add(tfBuscar);
+		pnBusca.add(btBuscar);
+		pnBusca.add(tfData);
+		pnBusca.add(btBuscarData);
+		
 		setLayout(new BorderLayout());
+		add(pnBusca, BorderLayout.NORTH);
 		add(spMovimentos, BorderLayout.CENTER);
 
 	}
@@ -81,6 +128,10 @@ public class PainelMovimentos extends JPanel {
 	public void refreshAdd() {
 		modelMovimentos.movimentos = movimentos = dao.listar();
 		modelMovimentos.refreshAdd();
+	}
+
+	public void refresshUpdate() {
+		modelMovimentos.fireTableDataChanged();
 	}
 
 	public void refreshDelete() {
@@ -134,13 +185,14 @@ public class PainelMovimentos extends JPanel {
 				movimento = movimentos.get(rowSelect);
 			}
 		});
-		
+
 		tbMovimentos.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 2){					
+				if (e.getClickCount() == 2) {
 					new DetalheMovimento(movimento);
-				}				
+					refresshUpdate();
+				}
 			}
 		});
 
@@ -164,6 +216,18 @@ public class PainelMovimentos extends JPanel {
 						}
 					}
 				}
+			}
+		});
+
+		// btBuscar
+		btBuscar.addActionListener(e -> {
+			String texto = tfBuscar.getText().trim().toLowerCase();
+			if (!texto.isEmpty()) {
+				modelMovimentos.movimentos = movimentos.stream().filter(m -> m.getEmitente().toLowerCase().contains(texto)
+						|| m.getReferencia().toLowerCase().contains(texto) || m.getNumero().toLowerCase().contains(texto))
+						.collect(Collectors.toList());
+				refresshUpdate();
+
 			}
 		});
 	}

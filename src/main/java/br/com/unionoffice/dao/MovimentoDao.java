@@ -35,4 +35,12 @@ public class MovimentoDao {
 	public Movimento buscar(Long id) {
 		return manager.find(Movimento.class, id);
 	}
+	
+	public void atualizar(Movimento movimento){
+		manager = ConnectionFactory.getManager();
+		manager.getTransaction().begin();
+		manager.merge(movimento);
+		manager.getTransaction().commit();
+		manager.close();
+	}
 }

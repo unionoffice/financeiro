@@ -146,7 +146,7 @@ public class NovoMovimento extends JDialog {
 		// tfData
 		tfData = new JFormattedTextField(maskData);
 		tfData.setHorizontalAlignment(SwingConstants.CENTER);
-		tfData.setValue(new SimpleDateFormat("dd/MM/yyyy").format(dataEmissao.getTime()));
+		tfData.setValue(formatador.format(dataEmissao.getTime()));
 
 		// lbEmitente
 		lbEmitente = new JLabel("Emitente:");

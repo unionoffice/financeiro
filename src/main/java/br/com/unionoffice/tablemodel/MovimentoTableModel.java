@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import br.com.unionoffice.modelo.Movimento;
+import br.com.unionoffice.modelo.Situacao;
 
 public class MovimentoTableModel extends AbstractTableModel {
 	public List<Movimento> movimentos;
@@ -61,6 +62,9 @@ public class MovimentoTableModel extends AbstractTableModel {
 		case 7:
 			return m.getNumero();
 		case 8:
+			if(m.getSituacao() == Situacao.LIQUIDADO && m.getDataLiquidacao() != null){
+				return m.getSituacao() + " - " + formatador.format(m.getDataLiquidacao().getTime());
+			}
 			return m.getSituacao();
 		case 9:
 			return m.getComprovante();

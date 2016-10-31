@@ -6,13 +6,15 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 
 public class JanelaPrincipal extends JFrame {
 	JMenuBar barraMenu;
 	JMenu menuArquivo, menuMovimento;
 	JMenuItem mitUsuarios, mitSair, mitNovoMovimento;
-	PainelMovimentos pnMovimentos;
+	PainelMovimentos pnMovimentos;	
 
 	public JanelaPrincipal() {
 		inicializarComponentes();
@@ -68,8 +70,15 @@ public class JanelaPrincipal extends JFrame {
 			pnMovimentos.refreshAdd();
 		});
 	}
+	
 
 	public static void main(String[] args) {
-		new JanelaPrincipal();
+		try {
+			UIManager.setLookAndFeel(
+		            "com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			new JanelaPrincipal();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		 
 	}
 }
