@@ -43,4 +43,5 @@ public class MovimentoDao {
 		manager.getTransaction().commit();
 		manager.close();
 	}
+		
 }

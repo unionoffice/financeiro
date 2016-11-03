@@ -15,7 +15,11 @@ public class MyTableCellRenderer implements TableCellRenderer {
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
 		JTextField editor = new JTextField();
-		editor.setHorizontalAlignment(SwingConstants.CENTER);
+		if (column == 11) {
+			editor.setHorizontalAlignment(SwingConstants.LEFT);
+		} else {
+			editor.setHorizontalAlignment(SwingConstants.CENTER);
+		}
 		if (value != null)
 			editor.setText(value.toString());
 		MovimentoTableModel model = (MovimentoTableModel) table.getModel();

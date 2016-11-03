@@ -39,6 +39,7 @@ public class Movimento {
 	private String numero;
 	@Column(nullable=true)
 	private String comprovante;
+	private boolean aceite;
 
 	public Movimento() {
 		situacao = Situacao.ABERTO;
@@ -171,5 +172,15 @@ public class Movimento {
 	public void setComprovante(String comprovante) {
 		this.comprovante = comprovante;
 	}
+
+	public boolean isAceite() {
+		return aceite;
+	}
+
+	public void setAceite(boolean aceite) {
+		this.aceite = aceite;
+	}
+	
+	
 
 }

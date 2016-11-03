@@ -7,13 +7,14 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import br.com.unionoffice.dao.MovimentoDao;
 import br.com.unionoffice.modelo.Movimento;
 import br.com.unionoffice.modelo.Situacao;
 
 public class MovimentoTableModel extends AbstractTableModel {
 	public List<Movimento> movimentos;
 	private String[] COLUNAS = { "EMISSÃO", "VALOR", "QTD_PARC", "PARCELA", "VENCIMENTO", "REFERÊNCIA", "EMITENTE",
-			"NUM", "SITUAÇÃO", "COMPROV", "OBSERVAÇÃO" };
+			"NUM","OK", "SITUAÇÃO", "COMPROV", "OBSERVAÇÃO" };
 
 	public MovimentoTableModel(List<Movimento> movimentos) {
 		this.movimentos = movimentos;
@@ -42,10 +43,11 @@ public class MovimentoTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat formatador;
 		Movimento m = movimentos.get(rowIndex);
 		switch (columnIndex) {
 		case 0:
+			formatador = new SimpleDateFormat("dd/MM/yyyy");
 			return formatador.format(m.getData().getTime());
 		case 1:
 			return NumberFormat.getCurrencyInstance().format(m.getValorParcela().doubleValue());
@@ -54,24 +56,37 @@ public class MovimentoTableModel extends AbstractTableModel {
 		case 3:
 			return m.getNumParcela();
 		case 4:
+			formatador = new SimpleDateFormat("dd/MM/yyyy");
 			return formatador.format(m.getVencimento().getTime());
 		case 5:
-			return m.getReferencia();
+			String prefixo = m.getTipoMovimento().name();
+			return prefixo  +" "+ m.getReferencia();
 		case 6:
 			return m.getEmitente();
 		case 7:
 			return m.getNumero();
 		case 8:
+			return m.isAceite();
+		case 9:
 			if(m.getSituacao() == Situacao.LIQUIDADO && m.getDataLiquidacao() != null){
+				formatador = new SimpleDateFormat("dd/MM/yyyy");
 				return m.getSituacao() + " - " + formatador.format(m.getDataLiquidacao().getTime());
 			}
 			return m.getSituacao();
-		case 9:
-			return m.getComprovante();
 		case 10:
+			return m.getComprovante();
+		case 11:
 			return m.getObservacao();
 		}
 		return null;
+	}
+	
+	@Override
+	public Class<?> getColumnClass(int columnIndex) {
+		if(columnIndex == 8){
+			return Boolean.class;
+		}
+		return super.getColumnClass(columnIndex);
 	}
 
 	@Override
@@ -81,10 +96,13 @@ public class MovimentoTableModel extends AbstractTableModel {
 
 	public Color getRowColor(int row) {
 		Movimento m = movimentos.get(row);
+		if(!m.isAceite()){
+			return Color.WHITE;
+		}
 		switch (m.getSituacao()) {
 		case ABERTO:
 			return new Color(255, 102, 102);
-		case AGUARDANDO_BOLETO:
+		case PENDENTE:
 			return new Color(255, 255, 153);
 		case LIQUIDADO:
 			return new Color(204, 255, 153);
@@ -92,6 +110,28 @@ public class MovimentoTableModel extends AbstractTableModel {
 			return Color.white;
 		}
 	}
+	
+	@Override
+	public boolean isCellEditable(int rowIndex, int columnIndex) {	
+		if(columnIndex == 8){
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+		if(columnIndex == 8){
+			boolean value = (Boolean) aValue;
+			Movimento m = movimentos.get(rowIndex);
+			m.setAceite(value);
+			new MovimentoDao().atualizar(m);
+		}
+		super.setValueAt(aValue, rowIndex, columnIndex);
+	}
 		
+	public Movimento get(int index){
+		return movimentos.get(index);
+	}
 
 }

@@ -21,10 +21,7 @@ public class ValorDocument extends PlainDocument {
 			if (str.contains(".")) {
 				return;
 			}
-			int index = texto.indexOf(".");
-			if (texto.substring(index).length() > 2) {
-				return;
-			}
+			
 		}
 		super.insertString(offs, str, a);
 	}

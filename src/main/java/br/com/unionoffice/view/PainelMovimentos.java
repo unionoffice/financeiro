@@ -7,12 +7,15 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -27,6 +30,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.MaskFormatter;
 
 import br.com.unionoffice.dao.MovimentoDao;
 import br.com.unionoffice.modelo.Movimento;
@@ -35,7 +39,6 @@ import br.com.unionoffice.tablemodel.MovimentoTableModel;
 
 public class PainelMovimentos extends JPanel {
 	private MovimentoDao dao;
-	private List<Movimento> movimentos;
 	private JTable tbMovimentos;
 	private MovimentoTableModel modelMovimentos;
 	private JScrollPane spMovimentos;
@@ -45,10 +48,12 @@ public class PainelMovimentos extends JPanel {
 	private int rowSelect;
 	private JPanel pnBusca;
 	private JTextField tfBuscar;
-	private JLabel lbBuscar;
+	private JLabel lbBuscar, lbAte;
 	private JButton btBuscar, btBuscarData;
-	private JFormattedTextField tfData;
-	SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
+	private JFormattedTextField tfDataInicial, tfDataFinal;
+	private SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
+	private MaskFormatter maskData;
+	private JCheckBox chkAbertos, chkLiquidados;
 
 	public PainelMovimentos() {
 		dao = new MovimentoDao();
@@ -64,17 +69,16 @@ public class PainelMovimentos extends JPanel {
 		renderRight.setHorizontalAlignment(SwingConstants.RIGHT);
 
 		// modelMovimentos
-		modelMovimentos = new MovimentoTableModel(movimentos = dao.listar());
+		 modelMovimentos = new MovimentoTableModel(dao.listar());
 
 		// tbMovimentos
-		tbMovimentos = new JTable(modelMovimentos);
+		tbMovimentos = new JTable(modelMovimentos );
 		tbMovimentos.setRowHeight(23);
 		tbMovimentos.setDefaultRenderer(Object.class, new MyTableCellRenderer());
 		tbMovimentos.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		/*
-		 * tbMovimentos.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); update();
-		 */
+		tbMovimentos.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		update();
 
 		// spMovimentos
 		spMovimentos = new JScrollPane(tbMovimentos);
@@ -89,17 +93,45 @@ public class PainelMovimentos extends JPanel {
 
 		// btBuscar
 		btBuscar = new JButton("OK");
-		btBuscar.setBounds(270, 15, 50, 30);
-		
-		// tfData
-		tfData = new JFormattedTextField("##/##/####");
-		tfData.setValue(formatador.format(new Date()));
-		tfData.setBounds(330,15,80,30);
-		tfData.setHorizontalAlignment(SwingConstants.CENTER);
+		btBuscar.setBounds(270, 15, 60, 30);
+
+		// mskData
+
+		try {
+			maskData = new MaskFormatter("##/##/####");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// tfDataInicial
+		tfDataInicial = new JFormattedTextField(maskData);
+		Calendar dataHoje = Calendar.getInstance();
+		tfDataInicial.setValue(formatador.format(dataHoje.getTime()));
+		tfDataInicial.setBounds(340, 15, 80, 30);
+		tfDataInicial.setHorizontalAlignment(SwingConstants.CENTER);
+
+		// lbAte
+		lbAte = new JLabel("Até");
+		lbAte.setBounds(430, 15, 20, 30);
+
+		// tfDataFinal
+		tfDataFinal = new JFormattedTextField(maskData);
+		dataHoje.add(Calendar.DAY_OF_MONTH, 7);
+		tfDataFinal.setValue(formatador.format(dataHoje.getTime()));
+		tfDataFinal.setBounds(460,15,80,30);
+		tfDataFinal.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		// btBuscarData
 		btBuscarData = new JButton("OK");
-		btBuscarData.setBounds(420,15,50,30);
+		btBuscarData.setBounds(550, 15, 60, 30);
+
+		// chkAbertos
+		chkAbertos = new JCheckBox("Abertos");
+		chkAbertos.setBounds(500, 15, 70, 30);
+
+		// chkLiquidados
+		chkLiquidados = new JCheckBox("Liquidados");
+		chkLiquidados.setBounds(580, 15, 90, 30);
 
 		// pnBusca
 		pnBusca = new JPanel();
@@ -109,9 +141,13 @@ public class PainelMovimentos extends JPanel {
 		pnBusca.add(lbBuscar);
 		pnBusca.add(tfBuscar);
 		pnBusca.add(btBuscar);
-		pnBusca.add(tfData);
+		pnBusca.add(tfDataInicial);
+		pnBusca.add(lbAte);
+		pnBusca.add(tfDataFinal);
 		pnBusca.add(btBuscarData);
-		
+		// pnBusca.add(chkAbertos);
+		// pnBusca.add(chkLiquidados);
+
 		setLayout(new BorderLayout());
 		add(pnBusca, BorderLayout.NORTH);
 		add(spMovimentos, BorderLayout.CENTER);
@@ -121,12 +157,12 @@ public class PainelMovimentos extends JPanel {
 	private void update() {
 		// adjustJTableRowSizes(tbMovimentos);
 		for (int i = 0; i < tbMovimentos.getColumnCount(); i++) {
-			adjustColumnSizes(tbMovimentos, i, 2);
+			adjustColumnSizes(tbMovimentos, i, 15);
 		}
 	}
 
 	public void refreshAdd() {
-		modelMovimentos.movimentos = movimentos = dao.listar();
+		modelMovimentos.movimentos = dao.listar();
 		modelMovimentos.refreshAdd();
 	}
 
@@ -135,7 +171,7 @@ public class PainelMovimentos extends JPanel {
 	}
 
 	public void refreshDelete() {
-		modelMovimentos.movimentos = movimentos = dao.listar();
+		modelMovimentos.movimentos = dao.listar();
 		modelMovimentos.refreshDelete();
 	}
 
@@ -181,8 +217,8 @@ public class PainelMovimentos extends JPanel {
 	private void definirEventos() {
 		tbMovimentos.getSelectionModel().addListSelectionListener(event -> {
 			rowSelect = tbMovimentos.getSelectedRow();
-			if (rowSelect >= 0) {
-				movimento = movimentos.get(rowSelect);
+			if (rowSelect >= 0 && rowSelect < modelMovimentos.movimentos.size()) {
+				movimento = modelMovimentos.get(rowSelect);
 			}
 		});
 
@@ -211,8 +247,6 @@ public class PainelMovimentos extends JPanel {
 							refreshDelete();
 						} catch (Exception e2) {
 							e2.printStackTrace();
-							JOptionPane.showMessageDialog(PainelMovimentos.this,
-									"Erro ao excluir o pedido: " + e2.getMessage());
 						}
 					}
 				}
@@ -223,12 +257,39 @@ public class PainelMovimentos extends JPanel {
 		btBuscar.addActionListener(e -> {
 			String texto = tfBuscar.getText().trim().toLowerCase();
 			if (!texto.isEmpty()) {
-				modelMovimentos.movimentos = movimentos.stream().filter(m -> m.getEmitente().toLowerCase().contains(texto)
-						|| m.getReferencia().toLowerCase().contains(texto) || m.getNumero().toLowerCase().contains(texto))
+				modelMovimentos.movimentos = modelMovimentos.movimentos.stream()
+						.filter(m -> m.getEmitente().toLowerCase().contains(texto)
+								|| m.getReferencia().toLowerCase().contains(texto)
+								|| m.getNumero().toLowerCase().contains(texto))
 						.collect(Collectors.toList());
 				refresshUpdate();
 
+			} else {
+				modelMovimentos.movimentos = dao.listar();
+				refresshUpdate();
 			}
+		});
+
+		// btBuscarData
+		btBuscarData.addActionListener(e -> {
+			try {
+				modelMovimentos.movimentos = dao.listar();
+				Date dataInicio = formatador.parse(tfDataInicial.getValue().toString());				
+				Calendar calendarInicio = Calendar.getInstance();								
+				calendarInicio.setTime(dataInicio);
+				calendarInicio.add(Calendar.DAY_OF_MONTH, -1);
+				Date dataFim = formatador.parse(tfDataFinal.getValue().toString());
+				Calendar calendarFim = Calendar.getInstance();				
+				calendarFim.setTime(dataFim);
+				calendarFim.add(Calendar.DAY_OF_MONTH, 1);
+				modelMovimentos.movimentos = modelMovimentos.movimentos.stream()
+						.filter(m -> m.getVencimento().after(calendarInicio) && m.getVencimento().before(calendarFim)).collect(Collectors.toList());
+				refresshUpdate();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+				JOptionPane.showMessageDialog(PainelMovimentos.this, "Formato de data inválido: " + e2.getMessage());
+			}
+
 		});
 	}
 }

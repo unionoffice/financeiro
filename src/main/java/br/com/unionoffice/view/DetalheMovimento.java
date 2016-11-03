@@ -98,6 +98,7 @@ public class DetalheMovimento extends JDialog {
 					movimento.setSituacao((Situacao) cbSituacao.getSelectedItem());
 					if (movimento.getSituacao() == Situacao.LIQUIDADO)
 						movimento.setComprovante(tfComprovante.getText());
+					movimento.setValorParcela(new BigDecimal(tfValorTotal.getText()));
 					dao.atualizar(movimento);
 					dispose();
 				} catch (Exception e2) {

@@ -28,15 +28,15 @@ public class JanelaPrincipal extends JFrame {
 		setExtendedState(MAXIMIZED_BOTH);
 
 		// mitUsuarios
-		mitUsuarios = new JMenuItem("Usuários");
-		mitUsuarios.setAccelerator(KeyStroke.getKeyStroke("CTRL + U"));
+		//mitUsuarios = new JMenuItem("Usuários");
+		//mitUsuarios.setAccelerator(KeyStroke.getKeyStroke("CTRL + U"));
 
 		// mitSair
 		mitSair = new JMenuItem("Sair");
 
 		// menuArquivo
 		menuArquivo = new JMenu("Arquivo");
-		menuArquivo.add(mitUsuarios);
+		//menuArquivo.add(mitUsuarios);
 		menuArquivo.addSeparator();
 		menuArquivo.add(mitSair);
 
@@ -74,8 +74,8 @@ public class JanelaPrincipal extends JFrame {
 
 	public static void main(String[] args) {
 		try {
-			UIManager.setLookAndFeel(
-		            "com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			//UIManager.setLookAndFeel(
+		    //        "com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 			new JanelaPrincipal();
 		} catch (Exception e) {
 			e.printStackTrace();

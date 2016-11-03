@@ -1,8 +1,7 @@
 package br.com.unionoffice.modelo;
 
 public enum Situacao {
-	ABERTO("Aberto"), LIQUIDADO("Liquidado"), AGUARDANDO_BOLETO("Aguardando boleto"), DEVOLVIDO(
-			"Devolvido"), PROV_DEVOLUCAO("Provável devolução");
+	ABERTO("Aberto"), LIQUIDADO("Liquidado"), PENDENTE("Pendente");
 
 	private String descricao;
 
