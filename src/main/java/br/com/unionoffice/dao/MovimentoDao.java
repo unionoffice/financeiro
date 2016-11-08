@@ -1,5 +1,7 @@
 package br.com.unionoffice.dao;
 
+import java.io.DataInput;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -18,9 +20,26 @@ public class MovimentoDao {
 		manager.close();
 	}
 
-	public List<Movimento> listar() {
+	public List<Movimento> listarTodos() {
 		manager = ConnectionFactory.getManager();
 		TypedQuery<Movimento> query = manager.createQuery("select m from Movimento m", Movimento.class);
+		return query.getResultList();
+	}
+
+	public List<Movimento> listar() {
+		manager = ConnectionFactory.getManager();
+		TypedQuery<Movimento> query = manager.createQuery(
+				"select m from Movimento m where m.vencimento >= :dataInicial and m.vencimento <= :dataFinal",
+				Movimento.class);
+		Calendar dtInicial = Calendar.getInstance();
+		dtInicial.set(Calendar.HOUR_OF_DAY, 0);
+		dtInicial.set(Calendar.MINUTE, 0);		
+		query.setParameter("dataInicial", dtInicial);
+		Calendar dtFinal = (Calendar) dtInicial.clone();
+		dtFinal.set(Calendar.HOUR, 23);
+		dtFinal.set(Calendar.MINUTE, 59);
+		dtFinal.add(Calendar.DAY_OF_MONTH, 7);
+		query.setParameter("dataFinal", dtFinal);
 		return query.getResultList();
 	}
 
@@ -35,13 +54,13 @@ public class MovimentoDao {
 	public Movimento buscar(Long id) {
 		return manager.find(Movimento.class, id);
 	}
-	
-	public void atualizar(Movimento movimento){
+
+	public void atualizar(Movimento movimento) {
 		manager = ConnectionFactory.getManager();
 		manager.getTransaction().begin();
 		manager.merge(movimento);
 		manager.getTransaction().commit();
 		manager.close();
 	}
-		
+
 }

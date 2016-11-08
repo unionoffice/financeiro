@@ -3,6 +3,7 @@ package br.com.unionoffice.tablemodel;
 import java.awt.Color;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -12,24 +13,31 @@ import br.com.unionoffice.modelo.Movimento;
 import br.com.unionoffice.modelo.Situacao;
 
 public class MovimentoTableModel extends AbstractTableModel {
-	public List<Movimento> movimentos;
+	private List<Movimento> movimentos;
 	private String[] COLUNAS = { "EMISSÃO", "VALOR", "QTD_PARC", "PARCELA", "VENCIMENTO", "REFERÊNCIA", "EMITENTE",
-			"NUM","OK", "SITUAÇÃO", "COMPROV", "OBSERVAÇÃO" };
+			"NUM", "OK", "SITUAÇÃO", "COMPROV", "OBSERVAÇÃO" };
 
 	public MovimentoTableModel(List<Movimento> movimentos) {
-		this.movimentos = movimentos;
+		setMovimentos(movimentos);
 
 	}
-	
-	public void refreshAdd() {		
+
+	public void setMovimentos(List<Movimento> movimentos) {
+		Collections.sort(movimentos);
+		this.movimentos = movimentos;
+	}
+
+	public List<Movimento> getMovimentos() {
+		return movimentos;
+	}
+
+	public void refreshAdd() {
 		fireTableRowsInserted(0, getRowCount());
 	}
-	
-	public void refreshDelete() {		
-		fireTableRowsDeleted(0, getRowCount()+1);
+
+	public void refreshDelete() {
+		fireTableRowsDeleted(0, getRowCount() + 1);
 	}
-	
-	
 
 	@Override
 	public int getRowCount() {
@@ -60,7 +68,7 @@ public class MovimentoTableModel extends AbstractTableModel {
 			return formatador.format(m.getVencimento().getTime());
 		case 5:
 			String prefixo = m.getTipoMovimento().name();
-			return prefixo  +" "+ m.getReferencia();
+			return prefixo + " " + m.getReferencia();
 		case 6:
 			return m.getEmitente();
 		case 7:
@@ -68,7 +76,7 @@ public class MovimentoTableModel extends AbstractTableModel {
 		case 8:
 			return m.isAceite();
 		case 9:
-			if(m.getSituacao() == Situacao.LIQUIDADO && m.getDataLiquidacao() != null){
+			if (m.getSituacao() == Situacao.LIQUIDADO && m.getDataLiquidacao() != null) {
 				formatador = new SimpleDateFormat("dd/MM/yyyy");
 				return m.getSituacao() + " - " + formatador.format(m.getDataLiquidacao().getTime());
 			}
@@ -80,10 +88,10 @@ public class MovimentoTableModel extends AbstractTableModel {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
-		if(columnIndex == 8){
+		if (columnIndex == 8) {
 			return Boolean.class;
 		}
 		return super.getColumnClass(columnIndex);
@@ -96,7 +104,7 @@ public class MovimentoTableModel extends AbstractTableModel {
 
 	public Color getRowColor(int row) {
 		Movimento m = movimentos.get(row);
-		if(!m.isAceite()){
+		if (!m.isAceite()) {
 			return Color.WHITE;
 		}
 		switch (m.getSituacao()) {
@@ -110,18 +118,18 @@ public class MovimentoTableModel extends AbstractTableModel {
 			return Color.white;
 		}
 	}
-	
+
 	@Override
-	public boolean isCellEditable(int rowIndex, int columnIndex) {	
-		if(columnIndex == 8){
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		if (columnIndex == 8) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		if(columnIndex == 8){
+		if (columnIndex == 8) {
 			boolean value = (Boolean) aValue;
 			Movimento m = movimentos.get(rowIndex);
 			m.setAceite(value);
@@ -129,8 +137,8 @@ public class MovimentoTableModel extends AbstractTableModel {
 		}
 		super.setValueAt(aValue, rowIndex, columnIndex);
 	}
-		
-	public Movimento get(int index){
+
+	public Movimento get(int index) {
 		return movimentos.get(index);
 	}
 

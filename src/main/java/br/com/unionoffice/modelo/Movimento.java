@@ -13,7 +13,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-public class Movimento {
+public class Movimento implements Comparable<Movimento> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -35,9 +35,9 @@ public class Movimento {
 	private Usuario finalizador;
 	private TipoMovimento tipoMovimento;
 	private CondPagamento condPagamento;
-	@Column(nullable=true)
+	@Column(nullable = true)
 	private String numero;
-	@Column(nullable=true)
+	@Column(nullable = true)
 	private String comprovante;
 	private boolean aceite;
 
@@ -180,7 +180,16 @@ public class Movimento {
 	public void setAceite(boolean aceite) {
 		this.aceite = aceite;
 	}
-	
-	
+
+	@Override
+	public int compareTo(Movimento movimento) {
+		switch (movimento.getSituacao()) {
+		case ABERTO:
+		case PENDENTE:
+			return getVencimento().compareTo(movimento.getVencimento());
+		default:
+			return -1;
+		}
+	}
 
 }

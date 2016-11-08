@@ -50,11 +50,11 @@ public class NovoMovimento extends JDialog {
 			definirEventos();
 			setModal(true);
 			setVisible(true);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-				
+
 	}
 
 	private void definirEventos() {
@@ -94,23 +94,25 @@ public class NovoMovimento extends JDialog {
 			} else {
 				condicao = (CondPagamento) cbCondPagamento.getSelectedItem();
 				double total = Double.parseDouble(tfValorTotal.getText());
-			
+
 				for (int i = 0; i < condicao.qtdParcelas; i++) {
 					Movimento movimento = new Movimento();
 					movimento.setValorParcela(new BigDecimal(total / condicao.qtdParcelas));
 					movimento.setReferencia(tfReferencia.getText());
 					movimento.setEmitente(tfEmitente.getText());
 					movimento.setTipoMovimento((TipoMovimento) cbTipoMovimento.getSelectedItem());
-					movimento.setCondPagamento((CondPagamento)cbCondPagamento.getSelectedItem());
+					movimento.setCondPagamento((CondPagamento) cbCondPagamento.getSelectedItem());
 					movimento.setNumParcela((byte) (i + 1));
-					movimento.setObservacao(tfObservacoes.getText());					
-					movimento.setVencimento((Calendar)dataVencimento.clone());
+					movimento.setObservacao(tfObservacoes.getText());
+					movimento.setVencimento((Calendar) dataVencimento.clone());
 					movimento.setData(dataEmissao);
 					movimento.setNumero(tfNumero.getText());
 					dao.inserir(movimento);
 					dataVencimento.add(Calendar.DAY_OF_YEAR, condicao.dias);
 				}
-				limpar();				
+				JOptionPane.showMessageDialog(null, "Movimento inserido com sucesso!", "Sucesso",
+						JOptionPane.INFORMATION_MESSAGE);
+				limpar();
 			}
 		});
 	}
@@ -183,10 +185,10 @@ public class NovoMovimento extends JDialog {
 		// tfReferencia
 		tfReferencia = new JTextField();
 		tfReferencia.setHorizontalAlignment(SwingConstants.CENTER);
-		
+
 		// lbNumero
 		lbNumero = new JLabel("Número:");
-		
+
 		// tfNumero
 		tfNumero = new JTextField();
 		tfNumero.setHorizontalAlignment(SwingConstants.CENTER);
@@ -240,8 +242,7 @@ public class NovoMovimento extends JDialog {
 
 	}
 
-	
-	private void limpar(){
+	private void limpar() {
 		tfEmitente.setText(null);
 		tfValorTotal.setText(null);
 		tfReferencia.setText(null);
