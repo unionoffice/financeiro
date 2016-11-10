@@ -13,7 +13,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-public class Movimento implements Comparable<Movimento> {
+public class Movimento implements Comparable<Movimento>, Cloneable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -192,4 +192,9 @@ public class Movimento implements Comparable<Movimento> {
 		}
 	}
 
+	@Override
+	public Movimento clone() throws CloneNotSupportedException {
+		Movimento movimento = (Movimento) super.clone();
+		return movimento;
+	}
 }

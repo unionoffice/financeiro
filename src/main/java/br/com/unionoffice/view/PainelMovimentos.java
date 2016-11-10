@@ -121,7 +121,7 @@ public class PainelMovimentos extends JPanel {
 
 		// tfDataFinal
 		tfDataFinal = new JFormattedTextField(maskData);
-		dataHoje.add(Calendar.DAY_OF_MONTH, 7);
+		dataHoje.add(Calendar.DAY_OF_MONTH, 30);
 		tfDataFinal.setValue(formatador.format(dataHoje.getTime()));
 		tfDataFinal.setBounds(460, 15, 80, 30);
 		tfDataFinal.setHorizontalAlignment(SwingConstants.CENTER);
@@ -388,5 +388,9 @@ public class PainelMovimentos extends JPanel {
 			valor = valor.add(m.getValorParcela());
 		}
 		tfTotal.setText(NumberFormat.getCurrencyInstance().format(valor.doubleValue()));
+	}
+	
+	public List<Movimento> getMovimentos(){
+		return modelMovimentos.getMovimentos();
 	}
 }

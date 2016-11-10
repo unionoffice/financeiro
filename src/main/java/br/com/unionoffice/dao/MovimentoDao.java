@@ -38,7 +38,7 @@ public class MovimentoDao {
 		Calendar dtFinal = (Calendar) dtInicial.clone();
 		dtFinal.set(Calendar.HOUR, 23);
 		dtFinal.set(Calendar.MINUTE, 59);
-		dtFinal.add(Calendar.DAY_OF_MONTH, 7);
+		dtFinal.add(Calendar.DAY_OF_MONTH, 30);
 		query.setParameter("dataFinal", dtFinal);
 		return query.getResultList();
 	}

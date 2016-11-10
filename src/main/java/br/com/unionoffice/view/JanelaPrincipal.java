@@ -6,25 +6,32 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.SplashScreen;
 import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
+import javax.swing.KeyStroke;
+
+import br.com.unionoffice.util.GeraExcel;
 
 public class JanelaPrincipal extends JFrame {
 	JMenuBar barraMenu;
 	JMenu menuArquivo, menuMovimento;
-	JMenuItem mitUsuarios, mitSair, mitNovoMovimento;
+	JMenuItem mitUsuarios, mitSair, mitNovoMovimento, mitExportar;
 	PainelMovimentos pnMovimentos;
 	SplashScreen splash;
 	JFrame content = new JFrame();
 	JLabel contador;
 	int carregou;
+	JFileChooser fcPasta;
 
 	public JanelaPrincipal() {
 		inicializarComponentes();
@@ -48,7 +55,6 @@ public class JanelaPrincipal extends JFrame {
 						contador.setText("Carregando .");
 					}
 					if (carregou == 1) {
-						System.out.println("FINALIZOU");
 						content.dispose();
 						content = null;
 						break;
@@ -68,18 +74,23 @@ public class JanelaPrincipal extends JFrame {
 		// frame
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
+		setSize(1024, 768);
 		setExtendedState(MAXIMIZED_BOTH);
 
 		// mitUsuarios
 		// mitUsuarios = new JMenuItem("Usuários");
 		// mitUsuarios.setAccelerator(KeyStroke.getKeyStroke("CTRL + U"));
 
+		// mitExportar
+		mitExportar = new JMenuItem("Exportar");
+		mitExportar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
+
 		// mitSair
 		mitSair = new JMenuItem("Sair");
 
 		// menuArquivo
 		menuArquivo = new JMenu("Arquivo");
-		// menuArquivo.add(mitUsuarios);
+		menuArquivo.add(mitExportar);
 		menuArquivo.addSeparator();
 		menuArquivo.add(mitSair);
 
@@ -103,7 +114,14 @@ public class JanelaPrincipal extends JFrame {
 		pnMovimentos = new PainelMovimentos();
 		setContentPane(pnMovimentos);
 
-		// visivel
+		// fcPasta
+		fcPasta = new JFileChooser();
+		fcPasta.setCurrentDirectory(new File(System.getProperty("user.home"), "Desktop"));
+		fcPasta.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fcPasta.setDialogTitle("Escolha o local para salvar o arquivo");
+		fcPasta.setApproveButtonText("Salvar");
+
+		// visivel		
 		setVisible(true);
 
 	}
@@ -116,6 +134,18 @@ public class JanelaPrincipal extends JFrame {
 
 		mitSair.addActionListener(e -> {
 			System.exit(0);
+		});
+
+		mitExportar.addActionListener(e -> {
+			int returnValue = fcPasta.showOpenDialog(null);
+			if (returnValue == JFileChooser.APPROVE_OPTION) {
+				File diretorio = fcPasta.getSelectedFile();
+				File file = new File(diretorio.getAbsolutePath() + "/financeiro.xls");
+				file.delete();
+				GeraExcel.expExcel(pnMovimentos.getMovimentos(), diretorio.getAbsolutePath());
+				JOptionPane.showMessageDialog(null, "Arquivo gerado com sucesso!", "Sucesso",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
 		});
 
 	}

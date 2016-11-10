@@ -105,7 +105,11 @@ public class MovimentoTableModel extends AbstractTableModel {
 	public Color getRowColor(int row) {
 		Movimento m = movimentos.get(row);
 		if (!m.isAceite()) {
-			return Color.WHITE;
+			if (m.getSituacao() == Situacao.PENDENTE && m.getObservacao().equals("PROVISÃO")) {
+				return new Color(179,215,255);
+			} else {
+				return Color.WHITE;
+			}
 		}
 		switch (m.getSituacao()) {
 		case ABERTO:

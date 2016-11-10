@@ -26,6 +26,7 @@ import br.com.unionoffice.dao.MovimentoDao;
 import br.com.unionoffice.document.ValorDocument;
 import br.com.unionoffice.modelo.CondPagamento;
 import br.com.unionoffice.modelo.Movimento;
+import br.com.unionoffice.modelo.Situacao;
 import br.com.unionoffice.modelo.TipoMovimento;
 
 public class NovoMovimento extends JDialog {
@@ -88,12 +89,13 @@ public class NovoMovimento extends JDialog {
 				JOptionPane.showMessageDialog(null, "Informe o valor total", "Informe",
 						JOptionPane.INFORMATION_MESSAGE);
 				tfValorTotal.requestFocus();
-			} else if (tfReferencia.getText().trim().isEmpty()) {
-				JOptionPane.showMessageDialog(null, "Informe a referência", "Informe", JOptionPane.INFORMATION_MESSAGE);
-				tfReferencia.requestFocus();
 			} else {
 				condicao = (CondPagamento) cbCondPagamento.getSelectedItem();
 				double total = Double.parseDouble(tfValorTotal.getText());
+				try {
+					dataVencimento.setTime(formatador.parse(tfVencimento.getValue().toString()));
+				} catch (Exception e2) {
+				}
 
 				for (int i = 0; i < condicao.qtdParcelas; i++) {
 					Movimento movimento = new Movimento();
@@ -107,6 +109,9 @@ public class NovoMovimento extends JDialog {
 					movimento.setVencimento((Calendar) dataVencimento.clone());
 					movimento.setData(dataEmissao);
 					movimento.setNumero(tfNumero.getText());
+					if (movimento.getObservacao().equals("PROVISÃO")) {
+						movimento.setSituacao(Situacao.PENDENTE);
+					}
 					dao.inserir(movimento);
 					dataVencimento.add(Calendar.DAY_OF_YEAR, condicao.dias);
 				}
@@ -248,5 +253,6 @@ public class NovoMovimento extends JDialog {
 		tfReferencia.setText(null);
 		tfObservacoes.setText(null);
 		tfEmitente.requestFocus();
+		tfNumero.setText(null);
 	}
 }

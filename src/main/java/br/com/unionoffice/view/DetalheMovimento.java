@@ -40,7 +40,7 @@ public class DetalheMovimento extends JDialog {
 	MaskFormatter maskData;
 	JComboBox<TipoMovimento> cbTipoMovimento;
 	JComboBox<Situacao> cbSituacao;
-	JButton btSalvar, btLiquidar;
+	JButton btSalvar, btLiquidar, btReplicar;
 	JPanel pnSuperior;
 	SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
 	MovimentoDao dao;
@@ -102,7 +102,7 @@ public class DetalheMovimento extends JDialog {
 					dao.atualizar(movimento);
 					dispose();
 				} catch (Exception e2) {
-					JOptionPane.showMessageDialog(null, "Erro", e2.getMessage(), JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null,  e2.getMessage(),"Erro", JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -129,7 +129,27 @@ public class DetalheMovimento extends JDialog {
 				dao.atualizar(movimento);
 				dispose();
 			} catch (Exception e2) {
-				JOptionPane.showMessageDialog(null, "Erro", e2.getMessage(), JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null,  e2.getMessage(),"Erro", JOptionPane.ERROR_MESSAGE);
+			}
+		});
+		
+		// btReplicar
+		btReplicar.addActionListener(e -> {
+			try {
+				String data = JOptionPane.showInputDialog(null, "Informe a data de vencimento no formato dd/mm/aaaa", "Informe a data", JOptionPane.QUESTION_MESSAGE);
+				Calendar dataVenc = Calendar.getInstance();
+				dataVenc.setTime(formatador.parse(data));
+				Movimento movimentoNovo = movimento.clone();
+				movimentoNovo.setVencimento(dataVenc);
+				movimentoNovo.setId(null);
+				movimentoNovo.setObservacao("PROVISÃO");
+				movimentoNovo.setSituacao(Situacao.PENDENTE);
+				dao.inserir(movimentoNovo);
+				JOptionPane.showMessageDialog(null, "Movimento inserido com sucesso!", "Sucesso",
+						JOptionPane.INFORMATION_MESSAGE);
+				dispose();
+			} catch (Exception e2) {
+				JOptionPane.showMessageDialog(null, e2.getMessage(),"Erro", JOptionPane.ERROR_MESSAGE);
 			}
 		});
 	}
@@ -255,6 +275,9 @@ public class DetalheMovimento extends JDialog {
 		btLiquidar = new JButton("Liquidar");
 		btLiquidar.setEnabled(movimento.getSituacao() != Situacao.LIQUIDADO);
 
+		// btReplicar
+		btReplicar = new JButton("Replicar");		
+
 		// add pnSuperior
 		pnSuperior.add(lbTipoMovimento);
 		pnSuperior.add(cbTipoMovimento);
@@ -284,6 +307,7 @@ public class DetalheMovimento extends JDialog {
 		pnBotoes.setPreferredSize(new Dimension(0, 45));
 		pnBotoes.add(btSalvar);
 		pnBotoes.add(btLiquidar);
+		pnBotoes.add(btReplicar);
 
 		// add frame
 		add(pnSuperior, BorderLayout.CENTER);
