@@ -297,7 +297,7 @@ public class DetalheMovimento extends JDialog {
 		pnSuperior.add(tfObservacoes);
 		pnSuperior.add(lbSituacao);
 		pnSuperior.add(cbSituacao);
-		if (movimento.getComprovante() != null && !movimento.getComprovante().isEmpty()) {
+		if (movimento.getSituacao() == Situacao.LIQUIDADO) {
 			pnSuperior.add(lbComprovante);
 			pnSuperior.add(tfComprovante);
 		}

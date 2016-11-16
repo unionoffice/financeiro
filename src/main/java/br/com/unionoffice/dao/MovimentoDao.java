@@ -1,6 +1,5 @@
 package br.com.unionoffice.dao;
 
-import java.io.DataInput;
 import java.util.Calendar;
 import java.util.List;
 
@@ -22,14 +21,14 @@ public class MovimentoDao {
 
 	public List<Movimento> listarTodos() {
 		manager = ConnectionFactory.getManager();
-		TypedQuery<Movimento> query = manager.createQuery("select m from Movimento m", Movimento.class);
+		TypedQuery<Movimento> query = manager.createQuery("select m from Movimento m order by situacao, vencimento", Movimento.class);
 		return query.getResultList();
 	}
 
 	public List<Movimento> listar() {
 		manager = ConnectionFactory.getManager();
 		TypedQuery<Movimento> query = manager.createQuery(
-				"select m from Movimento m where m.vencimento >= :dataInicial and m.vencimento <= :dataFinal",
+				"select m from Movimento m where m.vencimento >= :dataInicial and m.vencimento <= :dataFinal order by situacao, vencimento",
 				Movimento.class);
 		Calendar dtInicial = Calendar.getInstance();
 		dtInicial.set(Calendar.HOUR_OF_DAY, 0);

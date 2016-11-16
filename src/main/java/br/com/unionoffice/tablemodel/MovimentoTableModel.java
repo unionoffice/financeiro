@@ -23,7 +23,7 @@ public class MovimentoTableModel extends AbstractTableModel {
 	}
 
 	public void setMovimentos(List<Movimento> movimentos) {
-		Collections.sort(movimentos);
+		//Collections.sort(movimentos);
 		this.movimentos = movimentos;
 	}
 
